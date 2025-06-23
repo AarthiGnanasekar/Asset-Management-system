@@ -70,7 +70,7 @@ export const deleteAssets=async(req,res,next)=>{
 // }
 export const updateAssets=async(req,res,next)=>{
     try{
-    const {id}=req.query
+    const {id}=req.params
     await Asset.updateOne({_id:id},{...req.body})
     res.status(200).send({message:"Asset details updated"})
     }

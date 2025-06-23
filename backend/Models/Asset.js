@@ -1,5 +1,6 @@
 import mongoose from "mongoose"
 
+
 const assetSchema=new mongoose.Schema({
     name:{type:String,required:true},
     srlNo:{type:Number,required:true,unique:true},

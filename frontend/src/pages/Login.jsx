@@ -1,18 +1,33 @@
-import React, { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import { loginUser } from '../store/features/authThunk'
+import { checkAuthStatus, loginUser } from '../store/features/authThunk'
+import { useSelector } from 'react-redux'
 
-
+ 
 const Login = () => {
     const [credentials, setCredentials] = useState({
         email: '',
         password: '',
         role: 'employee'
     })
-    const [error, setError] = useState('')
+    const {isAuthenticated,loading,error,role}=useSelector((store)=>store.auth)
+    
     const navigate = useNavigate()
     const dispatch=useDispatch()
+
+    useEffect(()=>{
+        dispatch(checkAuthStatus)
+    })
+ 
+    useEffect(()=>{
+    //   console.log(isAuthenticated,loading,error)/
+
+    if(isAuthenticated){
+        navigate(`/${credentials.role}`)
+    }
+    },[isAuthenticated,loading,error,role])
+
 
     const handleSubmit = (e) => {
         e.preventDefault()
