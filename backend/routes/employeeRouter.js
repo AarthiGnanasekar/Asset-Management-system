@@ -1,6 +1,6 @@
 import express from "express"
 import { adminVerify } from "../Middlewares/adminVerify.js"
-import { addEmployee, allEmployee, getEmployee } from "../Controllers/employeeController.js"
+import { addEmployee, getAllEmployees, getEmployee } from "../Controllers/employeeController.js"
 
 
 
@@ -12,6 +12,6 @@ employeeRouter.get("/",getEmployee)
  
 employeeRouter.post("/add",adminVerify,addEmployee)
 
-employeeRouter.get("/all",adminVerify,allEmployee)
+employeeRouter.get("/all",adminVerify,getAllEmployees)
 
 export default employeeRouter
