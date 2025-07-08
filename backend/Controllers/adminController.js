@@ -2,6 +2,31 @@
 import AssignedAssets from "../Models/AssignedAssets.js"
 import Employee from "../Models/Employee.js"
  
+  export const getAssignedAsset = async (req, res, next) => {
+  try {
+    const allAssignments = await AssignedAssets.find();
+
+    const enriched = await Promise.all(
+      allAssignments.map(async (a) => {
+        const asset = await Asset.findById(a.assetId);
+        const employee = await Employee.findById(a.employeeId);
+   
+        return {
+          assetName: asset?.name || "N/A",
+          assetTag: asset?.assetTag || "N/A",
+          employeeName: employee?.name || "N/A",
+          empId: employee?.empId || "N/A",
+          assignedAt: a.assignedAt,
+          returnedAt: a.returnedAt,
+        };
+      })
+    );
+    res.status(200).json(enriched);
+  } catch (error) {
+    next(error);
+  }
+};
+
  export const assignedAsset=async(req,res,next)=>{
     try{
     // console.log(req.body)
@@ -14,7 +39,6 @@ import Employee from "../Models/Employee.js"
               const assignAssetDetails=new AssignedAssets({assetId:isAssetAvailable._id,employeeId:isEmployee._id,assignedAt})
               await assignAssetDetails.save()
              //modify the status of asset 
-
              isAssetAvailable.status="assigned"
              await isAssetAvailable.save()
 

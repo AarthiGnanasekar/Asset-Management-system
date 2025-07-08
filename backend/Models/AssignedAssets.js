@@ -9,7 +9,6 @@ const assignedAssetSchema=new mongoose.Schema({
     note:{type:String,default:null}
 },{timestamps:true})
 
-
 const AssignedAssets=model("AssignedAssets",assignedAssetSchema)
 
 export default AssignedAssets
