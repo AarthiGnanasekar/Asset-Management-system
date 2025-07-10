@@ -1,76 +1,73 @@
+import { useState, useEffect } from 'react';
+
 const Dashboard = () => {
-    return (
-        <div className="max-w-7xl mx-auto">
-            <h1 className="text-3xl font-bold text-indigo-900 mb-8">Admin Dashboard</h1>
+  const [stats, setStats] = useState({
+    totalEmployees: 0,
+    totalAssets: 0,
+    assignedAssets: 0,
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <DashboardCard
-                    title="Total Employees"
-                    value="42"
-                    icon="👨‍💼"
-                    color="bg-blue-500"
-                />
-                <DashboardCard
-                    title="Total Assets"
-                    value="128"
-                    icon="💻"
-                    color="bg-green-500"
-                />
-                <DashboardCard
-                    title="Assigned Assets"
-                    value="98"
-                    icon="📦"
-                    color="bg-yellow-500"
-                />
-                <DashboardCard
-                    title="Pending Requests"
-                    value="12"
-                    icon="📨"
-                    color="bg-red-500"
-                />
-            </div>
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+       
+        const [employeesRes, assetsRes] = await Promise.all([
+          fetch('http://localhost:8000/api/employee/all'),  //  employee API
+          fetch('http://localhost:8000/api/asset/all')     // asset API
+        ]);
 
-            <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4">Recent Activity</h2>
-                <ul className="space-y-3">
-                    <ActivityItem
-                        action="Assigned Macbook Pro to John Doe"
-                        time="2 hours ago"
-                    />
-                    <ActivityItem
-                        action="Added 10 new monitors to inventory"
-                        time="Yesterday"
-                    />
-                    <ActivityItem
-                        action="Approved Sarah's headphone request"
-                        time="2 days ago"
-                    />
-                </ul>
-            </div>
-        </div>
-    );
-};
+        if (!employeesRes.ok) throw new Error('Failed to fetch employees');
+        if (!assetsRes.ok) throw new Error('Failed to fetch assets');
 
-const DashboardCard = ({ title, value, icon, color }) => (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-        <div className={`p-4 ${color} text-white`}>
-            <div className="text-4xl">{icon}</div>
+        const employees = await employeesRes.json();
+        const assets = await assetsRes.json();
+
+        setStats({
+          totalEmployees: employees.length || employees.count || 0,
+          totalAssets: assets.length || assets.count || 0,
+          assignedAssets: assets.filter(asset => asset.status === 'assigned').length,
+        });
+      } catch (err) {
+        setError(err.message);
+        console.error("Fetch error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) return <div className="p-4 text-center">Loading dashboard...</div>;
+  if (error) return <div className="p-4 text-red-500">Error: {error}</div>;
+
+  return (
+    <div className="max-w-7xl mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Employees Card */}
+        <div className="bg-white p-6 rounded-lg shadow-md border-t-4 border-blue-500">
+          <h3 className="text-gray-500 text-sm font-medium">Total Employees</h3>
+          <p className="text-3xl font-bold mt-1">{stats.totalEmployees}</p>
         </div>
-        <div className="p-5">
-            <h3 className="text-gray-500">{title}</h3>
-            <p className="text-3xl font-bold mt-2">{value}</p>
+
+        {/* Assets Card */}
+        <div className="bg-white p-6 rounded-lg shadow-md border-t-4 border-green-500">
+          <h3 className="text-gray-500 text-sm font-medium">Total Assets</h3>
+          <p className="text-3xl font-bold mt-1">{stats.totalAssets}</p>
         </div>
+
+        {/* Assigned Assets Card */}
+        <div className="bg-white p-6 rounded-lg shadow-md border-t-4 border-yellow-500">
+          <h3 className="text-gray-500 text-sm font-medium">Assigned Assets</h3>
+          <p className="text-3xl font-bold mt-1">{stats.assignedAssets}</p>
+        </div>
+      </div>
     </div>
-);
-
-const ActivityItem = ({ action, time }) => (
-    <li className="flex items-start border-b pb-3 last:border-0 last:pb-0">
-        <div className="bg-blue-100 rounded-full p-2 mr-3">🔔</div>
-        <div>
-            <p className="font-medium">{action}</p>
-            <p className="text-sm text-gray-500">{time}</p>
-        </div>
-    </li>
-);
+  );
+};
 
 export default Dashboard;

@@ -1,31 +1,26 @@
  import Asset from "../Models/Asset.js"
 import AssignedAssets from "../Models/AssignedAssets.js"
 import Employee from "../Models/Employee.js"
- 
-  export const getAssignedAsset = async (req, res, next) => {
-  try {
-    const allAssignments = await AssignedAssets.find();
 
-    const enriched = await Promise.all(
-      allAssignments.map(async (a) => {
-        const asset = await Asset.findById(a.assetId);
-        const employee = await Employee.findById(a.employeeId);
-   
-        return {
-          assetName: asset?.name || "N/A",
-          assetTag: asset?.assetTag || "N/A",
-          employeeName: employee?.name || "N/A",
-          empId: employee?.empId || "N/A",
-          assignedAt: a.assignedAt,
-          returnedAt: a.returnedAt,
-        };
-      })
-    );
-    res.status(200).json(enriched);
+export const getAllAssets = async (req, res) => {
+  try {
+    const assignedAssets = await Asset.find({ 
+      status: "assigned"  // Directly query assets where status='assigned'
+    })// Only return needed fields
+
+    res.status(200).json({
+      success: true,
+      data: assignedAssets
+    });
+
   } catch (error) {
-    next(error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch assigned assets"
+    });
   }
 };
+
 
  export const assignedAsset=async(req,res,next)=>{
     try{
